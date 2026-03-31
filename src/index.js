@@ -7,6 +7,7 @@ import {
   updateTask
 } from './services/taskService.js';
 import { colorPriority, colorStatus } from './utils/colors.js';
+import { startServer } from './server.js';
 
 /**
  * Returns a task object with status and priority formatted for terminal output.
@@ -25,7 +26,7 @@ function formatTaskForDisplay(task) {
 /**
  * Runs a short demonstration of Task Manager features.
  */
-function main() {
+function runDemo() {
   try {
     const firstTask = createTask({
       title: 'Design API contract',
@@ -77,6 +78,25 @@ function main() {
   } catch (error) {
     console.error('Task Manager failed:', error);
     process.exitCode = 1;
+  }
+}
+
+/**
+ * Main entry point. Runs CLI demo by default or starts web server with --server flag.
+ */
+async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.includes('--server')) {
+    try {
+      const port = process.env.PORT || 3000;
+      await startServer(parseInt(port, 10));
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exitCode = 1;
+    }
+  } else {
+    runDemo();
   }
 }
 

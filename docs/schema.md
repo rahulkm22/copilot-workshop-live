@@ -15,6 +15,13 @@
 | `updatedAt` | number | Yes | Required; must be an integer Unix timestamp in milliseconds (`Number.isInteger`); set at creation and on each mutation; must be greater than or equal to `createdAt`; never decreases between updates. |
 | `category` | string | No | Optional; if omitted default to `'general'`; must be a string; trim leading/trailing whitespace before validation; must be 1-50 characters after trim; reject empty/whitespace-only values; accept case-insensitive input and normalize to lowercase canonical value. |
 
+### API Error Response
+
+| Property | Type | Description |
+|---|---|---|
+| `error` | string | Human-readable error message |
+| `statusCode` | number | HTTP status code (400, 404, 500, etc.) |
+
 ### Command input model
 
 | Input | Type | Required | Validation rules |
@@ -28,11 +35,60 @@
 | `--category` | string | No | Optional for `add` (defaults to "general"). For `list`: optional filter to display only tasks matching the specified category (case-insensitive). |
 | `--sort` | string | No | Must be `date` or `priority`. |
 
+### HTTP API Request/Response Models
+
+#### GET /api/tasks
+- **Query parameters:**
+  - `status` (optional): Filter by status (`todo`, `in-progress`, `done`)
+  - `priority` (optional): Filter by priority (`low`, `medium`, `high`)
+  - `category` (optional): Filter by category (case-insensitive)
+- **Response:** Array of Task objects matching filters
+- **Success code:** 200
+
+#### POST /api/tasks
+- **Request body:**
+  ```json
+  {
+    "title": "string (required, 1-100 chars)",
+    "description": "string (optional, max 500 chars)",
+    "priority": "string (optional, default 'medium')",
+    "category": "string (optional, default 'general')"
+  }
+  ```
+- **Response:** Created Task object with generated `id`, `createdAt`, `updatedAt`, and `status='todo'`
+- **Success code:** 201
+- **Error code:** 400 (validation failure)
+
+#### PUT /api/tasks/:id
+- **Request body:**
+  ```json
+  {
+    "title": "string (optional)",
+    "description": "string (optional)",
+    "status": "string (optional)",
+    "priority": "string (optional)",
+    "category": "string (optional)"
+  }
+  ```
+- **Response:** Updated Task object with refreshed `updatedAt`
+- **Success code:** 200
+- **Error codes:** 400 (validation failure), 404 (task not found)
+
+#### DELETE /api/tasks/:id
+- **Response:** `{ "message": "Task deleted" }`
+- **Success code:** 200
+- **Error code:** 404 (task not found)
+
+#### GET /
+- **Response:** HTML content with embedded CSS and JavaScript for the web UI
+- **Success code:** 200
+
 ## 2. File structure
 
 ```text
 src/
 ├── index.js                    # CLI entry point; routes parsed args to command modules
+├── server.js                   # HTTP server for web UI; serves REST API and HTML
 ├── commands/
 │   ├── add.js                  # Implements task add flow
 │   ├── list.js                 # Implements list with optional filters and sorting
@@ -42,22 +98,42 @@ src/
 │   └── help.js                 # Implements help and usage output
 ├── models/
 │   └── task.js                 # Task factory/shape helpers and model-level checks
+├── services/
+│   └── taskService.js          # Task CRUD and filtering operations
+├── public/
+│   └── index.html              # Web UI with embedded HTML, CSS, and JavaScript
 ├── store/
 │   └── task-store.js           # In-memory task state and CRUD/query operations
 └── utils/
     ├── parser.js               # CLI token/flag parsing
     ├── formatter.js            # Output formatting for lists and confirmations
+    ├── colors.js               # Terminal color formatting with chalk
     └── validators.js           # Reusable input/domain validators
 
-test/
-├── add.test.js                 # Verifies add behavior
-├── list.test.js                # Verifies listing/filter/sort behavior
-├── update.test.js              # Verifies update behavior
-├── done.test.js                # Verifies done behavior
-└── delete.test.js              # Verifies delete behavior
+tests/
+├── task.test.js                # Verifies Task model behavior
+├── taskService.test.js         # Verifies CRUD and filtering operations
+├── validators.test.js          # Verifies input validation
+└── server.test.js              # Verifies HTTP API endpoints
 ```
 
-## 3. Module responsibilities
+## 3. Server configuration
+
+### HTTP Server
+- **Runtime:** Node.js built-in `http` module (no external framework)
+- **Port:** 3000 (configurable via `PORT` environment variable)
+- **Routes:**
+  - `GET /` - Serves `src/public/index.html` (web UI)
+  - `GET /api/tasks` - Returns all tasks (with optional filters)
+  - `POST /api/tasks` - Creates a new task
+  - `PUT /api/tasks/:id` - Updates an existing task
+  - `DELETE /api/tasks/:id` - Deletes a task
+  - `GET /api/tasks/:id` - Returns a single task by id (optional)
+- **Content types:** JSON for API responses, HTML for web UI
+- **CORS:** Not required (same-origin requests only)
+- **Request validation:** All API inputs validated using `src/utils/validators.js`
+
+## 4. Module responsibilities
 
 ### `src/index.js`
 - Exports: none (executable entrypoint).
@@ -115,11 +191,21 @@ test/
 - Depends on: none.
 
 ### `src/utils/validators.js`
-- Exports: `validateTitle`, `validateDescription`, `validateStatus`, `validatePriority`, `validateSort`, `validateTaskId`.
+- Exports: `validateTitle`, `validateDescription`, `validateStatus`, `validatePriority`, `validateSort`, `validateTaskId`, `validateCategory`.
 - Responsibility: centralize domain validation and normalization rules.
 - Depends on: none.
 
-## 4. Error handling strategy
+### `src/server.js`
+- Exports: `startServer(port)`, `stopServer()`.
+- Responsibility: create HTTP server, route requests to API handlers, serve web UI, parse JSON request bodies.
+- Depends on: `src/services/taskService.js`, `src/utils/validators.js`, `src/public/index.html`.
+
+### `src/public/index.html`
+- Exports: none (static asset).
+- Responsibility: render task management UI with embedded CSS and vanilla JavaScript, communicate with API endpoints.
+- Depends on: HTTP API endpoints from `src/server.js`.
+
+## 5. Error handling strategy
 
 ### Error types
 

@@ -98,6 +98,36 @@ The Task Manager CLI is a command-line application built with Node.js that allow
       - Filter works in combination with status and priority filters
       - Works alongside sorting options
 
+13. **View tasks in a web UI**
+    - As a user, I want to manage tasks through a web browser interface
+    - Acceptance criteria:
+      - Navigate to `http://localhost:3000` to access the web UI
+      - All tasks are displayed in a responsive table or card layout
+      - Tasks show ID, title, description, status, priority, and category
+      - Status and priority values are displayed with color indicators
+      - Page title shows the application name and updates dynamically
+
+14. **Create, update, and delete tasks via web UI**
+    - As a user, I want to perform task operations without using the CLI
+    - Acceptance criteria:
+      - Web form to create new tasks with title, description, priority, category, and status
+      - Click to edit: inline edit or modal for updating task properties
+      - Delete button removes tasks with confirmation
+      - Form validation shows errors for invalid input
+      - Success/error messages confirm operation results
+      - Tasks update in real-time (no page refresh required for basic operations)
+
+15. **Filter and search tasks in web UI**
+    - As a user, I want to view specific tasks using the web interface
+    - Acceptance criteria:
+      - Filter dropdown for status (todo, in-progress, done)
+      - Filter dropdown for priority (low, medium, high)
+      - Filter dropdown for category (all assigned categories)
+      - Search box to filter by title or description text
+      - Filters work in combination (status AND priority AND category)
+      - Clear filters button resets all filters
+      - Display count of filtered results
+
 ## Data Model
 
 ### Task Entity
@@ -126,6 +156,7 @@ The Task Manager CLI is a command-line application built with Node.js that allow
 ```
 src/
 ├── index.js                 # CLI entry point and command handler
+├── server.js                # HTTP server for web UI
 ├── commands/
 │   ├── add.js              # Add command implementation
 │   ├── list.js             # List command with filtering/sorting
@@ -136,9 +167,14 @@ src/
 │   └── Task.js             # Task class and validation
 ├── store/
 │   └── TaskStore.js        # In-memory task storage and queries
+├── services/
+│   └── taskService.js      # Task service layer with CRUD and filtering
+├── public/
+│   └── index.html          # Web UI with HTML, CSS, and JavaScript
 └── utils/
     ├── parser.js           # Command-line argument parser
     ├── formatter.js        # Output formatting and display
+    ├── colors.js           # Terminal color formatting with chalk
     └── validators.js       # Input validation functions
 ```
 
@@ -189,6 +225,28 @@ src/
 - [ ] Validate with Node.js 20+ without external dependencies
 
 **Deliverable:** Production-ready CLI with full documentation
+
+### Phase 5: Web UI & API (Milestone 5)
+**Objective:** Add web-based interface for task management
+- [ ] Create HTTP server using Node.js built-in `http` module
+- [ ] Implement RESTful API endpoints:
+  - [ ] `GET /api/tasks` - retrieve all tasks with optional filters
+  - [ ] `POST /api/tasks` - create a new task
+  - [ ] `PUT /api/tasks/:id` - update an existing task
+  - [ ] `DELETE /api/tasks/:id` - delete a task
+- [ ] Create web UI with HTML, CSS, and vanilla JavaScript
+  - [ ] Responsive task list/table display
+  - [ ] Task creation form
+  - [ ] Inline editing or modal for updates
+  - [ ] Delete confirmation
+  - [ ] Filter controls (status, priority, category, search)
+  - [ ] Color-coded status and priority indicators
+- [ ] Add real-time task updates to web UI
+- [ ] Serve static assets (HTML, CSS, JS) from `src/public/`
+- [ ] Create server startup script or CLI flag to launch web server
+- [ ] Add API error handling and validation
+
+**Deliverable:** Fully functional web UI running on `http://localhost:3000`
 
 ## Error Handling Conventions and Input Validation Rules
 
@@ -290,14 +348,21 @@ All success messages follow this pattern:
 ## Technical Constraints
 
 - **Node.js version:** 20+
-- **Dependencies:** None (only built-in modules)
+- **Dependencies:** Built-in modules only; chalk approved for CLI colors
 - **Storage:** In-memory only (data lost on process exit)
 - **Platform compatibility:** Cross-platform (Windows, macOS, Linux)
-- **CLI pattern:** Command-based (e.g., `task add`, `task list`)
+- **Web server:** Node.js built-in `http` module, no external framework required
+- **Web UI:** Vanilla HTML/CSS/JavaScript, no frontend libraries
 
 ## Success Criteria
 
-- All user stories have been implemented and tested
+- All user stories (CLI and web UI) have been implemented and tested
+- CLI supports all commands, filters, and task operations
+- Web UI provides full task management interface at `http://localhost:3000`
+- RESTful API endpoints work correctly with proper validation
+- Code follows conventions: ES modules, 2-space indentation, JSDoc comments
+- No external dependencies beyond approved packages (chalk)
+- All tests pass with `node --test`
 - No external dependencies are used
 - Code is documented and maintainable
 - Help documentation is clear and accurate
