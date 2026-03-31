@@ -164,6 +164,96 @@ src/
 
 **Deliverable:** Production-ready CLI with full documentation
 
+## Error Handling Conventions and Input Validation Rules
+
+### Input Validation Rules
+
+#### Task Title
+- **Required:** Yes
+- **Type:** String
+- **Length:** 1-100 characters
+- **Constraints:** Cannot be empty, leading/trailing whitespace trimmed
+- **Error message:** `"Error: Task title is required and must be between 1-100 characters"`
+
+#### Task Description
+- **Required:** No (optional)
+- **Type:** String
+- **Length:** 0-500 characters
+- **Constraints:** If provided, max 500 characters
+- **Error message:** `"Error: Task description cannot exceed 500 characters"`
+
+#### Task ID
+- **Required:** Yes (for update/delete/done operations)
+- **Type:** String
+- **Constraints:** Must reference an existing task; format "task-TIMESTAMP"
+- **Error message:** `"Error: Task with ID '{id}' not found"`
+
+#### Task Priority
+- **Required:** No (defaults to "medium")
+- **Type:** Enum
+- **Allowed values:** "low", "medium", "high" (case-insensitive)
+- **Error message:** `"Error: Priority must be one of: low, medium, high"`
+
+#### Task Status
+- **Required:** No (defaults to "todo")
+- **Type:** Enum
+- **Allowed values:** "todo", "in-progress", "done" (case-insensitive)
+- **Error message:** `"Error: Status must be one of: todo, in-progress, done"`
+
+#### Filter/Sort Parameters
+- **Filter values:** Must match valid enum values for status/priority
+- **Sort values:** "date" or "priority" only
+- **Error message:** `"Error: Invalid filter or sort parameter: '{value}'"`
+
+### Error Handling Patterns
+
+#### Pattern 1: Validation Failure
+```
+User input → Validate → Fail → Display error message → Exit with code 1
+```
+
+#### Pattern 2: Operation Success
+```
+Valid input → Execute operation → Display success message → Exit with code 0
+```
+
+#### Pattern 3: Invalid Command
+```
+Unknown command → Display error → Show help hint → Exit with code 1
+```
+
+#### Pattern 4: Missing Required Argument
+```
+Incomplete command → Parse fails → Display usage → Exit with code 1
+```
+
+### Error Message Format
+
+All error messages follow this pattern:
+```
+"Error: [specific error description]"
+```
+
+All success messages follow this pattern:
+```
+"✓ [action completed]: [details]"
+```
+
+### Validation Strategy
+
+1. **Early validation:** Validate all inputs before any data mutations
+2. **Fail-fast:** Return first error encountered, don't accumulate errors
+3. **Helpful messages:** Include the invalid value and allowed options
+4. **Consistent naming:** Use consistent terminology in all messages
+5. **User-friendly:** Avoid technical jargon in error messages
+
+### Number Handling
+
+- **Task ID:** Auto-generated from `Date.now()` as `"task-" + timestamp`
+- **Timestamps:** Stored as Unix milliseconds (number type)
+- **Priority levels:** Sorted numerically (high=3, medium=2, low=1) internally
+- **No user input for ID or timestamp:** Users never directly provide these values
+
 ## Technical Constraints
 
 - **Node.js version:** 20+
