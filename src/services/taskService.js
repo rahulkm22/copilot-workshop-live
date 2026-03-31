@@ -86,6 +86,19 @@ export function deleteTask(id) {
 }
 
 /**
+ * Filters tasks by category.
+ *
+ * @param {string} category - Category to filter by (case-insensitive).
+ * @returns {object[]} Copies of all tasks matching the category, in insertion order.
+ */
+export function filterTasksByCategory(category) {
+  const normalizedCategory = category.toLowerCase();
+  return [...tasks.values()]
+    .filter((task) => task.category === normalizedCategory)
+    .map((task) => task.toJSON());
+}
+
+/**
  * Removes all tasks from the in-memory store. Intended for test isolation only.
  */
 export function clearTasks() {

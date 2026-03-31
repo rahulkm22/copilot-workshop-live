@@ -148,6 +148,40 @@ export function validateTaskId(id) {
 }
 
 /**
+ * Validates and normalizes a task category.
+ *
+ * @param {string|undefined} category - Raw category value.
+ * @returns {string} Normalized category.
+ * @throws {TypeError} When category is not a valid string between 1-50 chars.
+ * @example
+ * validateCategory('  Work  ');
+ * // 'work'
+ * @example
+ * validateCategory(undefined);
+ * // 'general'
+ */
+export function validateCategory(category) {
+  if (category === undefined) {
+    return 'general';
+  }
+
+  if (typeof category !== 'string') {
+    throw new TypeError('Invalid category: expected a string.');
+  }
+
+  const normalizedCategory = category.trim().toLowerCase();
+  if (normalizedCategory.length === 0) {
+    throw new TypeError('Invalid category: cannot be empty.');
+  }
+
+  if (normalizedCategory.length > 50) {
+    throw new TypeError('Invalid category: must be 50 characters or fewer.');
+  }
+
+  return normalizedCategory;
+}
+
+/**
  * Validates update patch input for a task.
  *
  * @param {object} updates - Partial update payload.
@@ -183,9 +217,13 @@ export function validateTaskUpdates(updates) {
     normalizedUpdates.priority = validatePriority(updates.priority);
   }
 
+  if (Object.hasOwn(updates, 'category')) {
+    normalizedUpdates.category = validateCategory(updates.category);
+  }
+
   if (Object.keys(normalizedUpdates).length === 0) {
     throw new TypeError(
-      'Invalid updates: include at least one of title, description, status, or priority.'
+      'Invalid updates: include at least one of title, description, status, priority, or category.'
     );
   }
 
