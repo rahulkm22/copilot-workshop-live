@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import {
+  validateCategory,
   validateDescription,
   validatePriority,
   validateStatus,
@@ -20,6 +21,7 @@ export class Task {
    * @param {string} [input.description] - Task description.
    * @param {'todo'|'in-progress'|'done'} [input.status] - Task status.
    * @param {'low'|'medium'|'high'} [input.priority] - Task priority.
+   * @param {string} [input.category] - Task category (defaults to 'general').
    * @param {string} [input.id] - Existing task id, mostly for hydration.
    * @param {number} [input.createdAt] - Existing creation timestamp.
    * @param {number} [input.updatedAt] - Existing update timestamp.
@@ -34,6 +36,7 @@ export class Task {
     this.description = validateDescription(input.description);
     this.status = validateStatus(input.status);
     this.priority = validatePriority(input.priority);
+    this.category = validateCategory(input.category);
 
     const createdAt = input.createdAt === undefined ? Date.now() : input.createdAt;
     const updatedAt = input.updatedAt === undefined ? createdAt : input.updatedAt;
@@ -77,6 +80,10 @@ export class Task {
       this.priority = normalizedUpdates.priority;
     }
 
+    if (normalizedUpdates.category !== undefined) {
+      this.category = normalizedUpdates.category;
+    }
+
     this.updatedAt = Date.now();
     return this;
   }
@@ -84,7 +91,7 @@ export class Task {
   /**
    * Converts the task to a plain object.
    *
-   * @returns {{id: string, title: string, description: string, status: string, priority: string, createdAt: number, updatedAt: number}} JSON-safe task data.
+   * @returns {{id: string, title: string, description: string, status: string, priority: string, category: string, createdAt: number, updatedAt: number}} JSON-safe task data.
    */
   toJSON() {
     return {
@@ -93,6 +100,7 @@ export class Task {
       description: this.description,
       status: this.status,
       priority: this.priority,
+      category: this.category,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

@@ -81,6 +81,23 @@ The Task Manager CLI is a command-line application built with Node.js that allow
       - Displays overview of all available commands with syntax
       - Examples are provided for common operations
 
+11. **Assign a category to a task**
+    - As a user, I want to organize tasks by category (e.g., "work", "personal", "urgent")
+    - Acceptance criteria:
+      - Command: `task add "title" "description" --category "work"`
+      - Category is optional and defaults to "general" if not specified
+      - Category value is a string with no predefined enum list
+      - Task is created with the assigned category
+      - Success message displays the category assigned to the task
+
+12. **Filter tasks by category**
+    - As a user, I want to view only tasks in a specific category
+    - Acceptance criteria:
+      - Command: `task list --category "work"`
+      - Only tasks matching the specified category are displayed
+      - Filter works in combination with status and priority filters
+      - Works alongside sorting options
+
 ## Data Model
 
 ### Task Entity
@@ -92,8 +109,17 @@ The Task Manager CLI is a command-line application built with Node.js that allow
 | description | string | Detailed task information | "Check code quality and test coverage" |
 | status | enum | Current state of task | "todo", "in-progress", "done" |
 | priority | enum | Task urgency level | "low", "medium", "high" |
+| category | string | Optional task category for organization | "work", "personal", "urgent" |
 | createdAt | number | Unix timestamp of creation | 1711900800000 |
 | updatedAt | number | Unix timestamp of last modification | 1711900800000 |
+
+**Category Property Details:**
+- **Optional:** Yes (defaults to "general" if not specified)
+- **Type:** String
+- **Format:** Free-form string, user-defined (no predefined enum)
+- **Default value:** "general"
+- **Length:** 1-50 characters recommended
+- **Use cases:** "work", "personal", "urgent", "shopping", "health", etc.
 
 ## File Structure
 
@@ -199,6 +225,13 @@ src/
 - **Type:** Enum
 - **Allowed values:** "todo", "in-progress", "done" (case-insensitive)
 - **Error message:** `"Error: Status must be one of: todo, in-progress, done"`
+
+#### Task Category
+- **Required:** No (defaults to "general")
+- **Type:** String
+- **Length:** 1-50 characters
+- **Constraints:** Free-form string, user-defined; leading/trailing whitespace trimmed
+- **Error message:** `"Error: Category must be between 1-50 characters"`
 
 #### Filter/Sort Parameters
 - **Filter values:** Must match valid enum values for status/priority

@@ -225,4 +225,95 @@ describe('Task toJSON()', () => {
     const task = new Task({ title: 'T' });
     assert.equal(task.toJSON().priority, 'medium');
   });
+
+  it('category in toJSON defaults to "general"', () => {
+    const task = new Task({ title: 'T' });
+    assert.equal(task.toJSON().category, 'general');
+  });
+
+  it('category is included in toJSON output', () => {
+    const task = new Task({ title: 'T', category: 'work' });
+    const json = task.toJSON();
+    assert.ok(Object.hasOwn(json, 'category'));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Constructor — category defaults and explicit values
+// ---------------------------------------------------------------------------
+
+describe('Task constructor — category', () => {
+  it('defaults category to "general"', () => {
+    const task = new Task({ title: 'Default task' });
+    assert.equal(task.category, 'general');
+  });
+
+  it('stores the provided category in lowercase', () => {
+    const task = new Task({ title: 'T', category: 'WORK' });
+    assert.equal(task.category, 'work');
+  });
+
+  it('trims whitespace from category', () => {
+    const task = new Task({ title: 'T', category: '  personal  ' });
+    assert.equal(task.category, 'personal');
+  });
+
+  it('accepts valid categories like "work", "personal", "urgent"', () => {
+    ['work', 'personal', 'urgent'].forEach((cat) => {
+      const task = new Task({ title: 'T', category: cat });
+      assert.equal(task.category, cat);
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Constructor — category validation errors
+// ---------------------------------------------------------------------------
+
+describe('Task constructor — category validation errors', () => {
+  it('throws TypeError when category is not a string', () => {
+    assert.throws(() => new Task({ title: 'T', category: 123 }), TypeError);
+  });
+
+  it('throws TypeError when category is empty string', () => {
+    assert.throws(() => new Task({ title: 'T', category: '' }), TypeError);
+  });
+
+  it('throws TypeError when category is whitespace only', () => {
+    assert.throws(() => new Task({ title: 'T', category: '   ' }), TypeError);
+  });
+
+  it('throws TypeError when category exceeds 50 characters', () => {
+    assert.throws(() => new Task({ title: 'T', category: 'x'.repeat(51) }), TypeError);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// update() — category
+// ---------------------------------------------------------------------------
+
+describe('Task update() — category', () => {
+  it('updates category and leaves other fields unchanged', () => {
+    const task = new Task({ title: 'T', category: 'work', status: 'todo' });
+    task.update({ category: 'personal' });
+    assert.equal(task.category, 'personal');
+    assert.equal(task.status, 'todo');
+  });
+
+  it('normalizes category to lowercase when updating', () => {
+    const task = new Task({ title: 'T' });
+    task.update({ category: 'URGENT' });
+    assert.equal(task.category, 'urgent');
+  });
+
+  it('trims whitespace from category when updating', () => {
+    const task = new Task({ title: 'T' });
+    task.update({ category: '  work  ' });
+    assert.equal(task.category, 'work');
+  });
+
+  it('throws TypeError when updating with invalid category', () => {
+    const task = new Task({ title: 'T' });
+    assert.throws(() => task.update({ category: 'x'.repeat(51) }), TypeError);
+  });
 });

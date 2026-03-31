@@ -1,6 +1,7 @@
 import {
   createTask,
   deleteTask,
+  filterTasksByCategory,
   getTaskById,
   listTasks,
   updateTask
@@ -37,12 +38,28 @@ function main() {
       title: 'Write unit tests',
       description: 'Cover create, update, list, delete flows',
       status: 'todo',
-      priority: 'medium'
+      priority: 'medium',
+      category: 'work'
     });
     console.log('Created task 2:', formatTaskForDisplay(secondTask));
 
+    const thirdTask = createTask({
+      title: 'Plan weekend hike',
+      description: 'Research trails in the area',
+      status: 'todo',
+      priority: 'low',
+      category: 'personal'
+    });
+    console.log('Created task 3:', formatTaskForDisplay(thirdTask));
+
     const allTasks = listTasks();
     console.log('All tasks:', allTasks.map(formatTaskForDisplay));
+
+    const workTasks = filterTasksByCategory('work');
+    console.log('Work tasks:', workTasks.map(formatTaskForDisplay));
+
+    const personalTasks = filterTasksByCategory('personal');
+    console.log('Personal tasks:', personalTasks.map(formatTaskForDisplay));
 
     const updatedTask = updateTask(firstTask.id, {
       status: 'in-progress',
