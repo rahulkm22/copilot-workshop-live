@@ -84,3 +84,10 @@ export function deleteTask(id) {
   tasks.delete(normalizedId);
   return task.toJSON();
 }
+
+/**
+ * Removes all tasks from the in-memory store. Intended for test isolation only.
+ */
+export function clearTasks() {
+  tasks.clear();
+}
