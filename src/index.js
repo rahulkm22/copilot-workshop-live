@@ -5,6 +5,21 @@ import {
   listTasks,
   updateTask
 } from './services/taskService.js';
+import { colorPriority, colorStatus } from './utils/colors.js';
+
+/**
+ * Returns a task object with status and priority formatted for terminal output.
+ *
+ * @param {object} task - Task object from the service layer.
+ * @returns {object} Task object with styled status and priority values.
+ */
+function formatTaskForDisplay(task) {
+  return {
+    ...task,
+    status: colorStatus(task.status),
+    priority: colorPriority(task.priority)
+  };
+}
 
 /**
  * Runs a short demonstration of Task Manager features.
@@ -16,7 +31,7 @@ function main() {
       description: 'Draft endpoints and payloads for task module',
       priority: 'high'
     });
-    console.log('Created task 1:', firstTask);
+    console.log('Created task 1:', formatTaskForDisplay(firstTask));
 
     const secondTask = createTask({
       title: 'Write unit tests',
@@ -24,24 +39,24 @@ function main() {
       status: 'todo',
       priority: 'medium'
     });
-    console.log('Created task 2:', secondTask);
+    console.log('Created task 2:', formatTaskForDisplay(secondTask));
 
     const allTasks = listTasks();
-    console.log('All tasks:', allTasks);
+    console.log('All tasks:', allTasks.map(formatTaskForDisplay));
 
     const updatedTask = updateTask(firstTask.id, {
       status: 'in-progress',
       description: 'Draft endpoints, payloads, and error responses'
     });
-    console.log('Updated task 1:', updatedTask);
+    console.log('Updated task 1:', formatTaskForDisplay(updatedTask));
 
     const loadedTask = getTaskById(secondTask.id);
-    console.log('Fetched task 2 by id:', loadedTask);
+    console.log('Fetched task 2 by id:', formatTaskForDisplay(loadedTask));
 
     const deletedTask = deleteTask(firstTask.id);
-    console.log('Deleted task 1:', deletedTask);
+    console.log('Deleted task 1:', formatTaskForDisplay(deletedTask));
 
-    console.log('Tasks after deletion:', listTasks());
+    console.log('Tasks after deletion:', listTasks().map(formatTaskForDisplay));
   } catch (error) {
     console.error('Task Manager failed:', error);
     process.exitCode = 1;
